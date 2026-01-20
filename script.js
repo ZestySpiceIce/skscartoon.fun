@@ -31,27 +31,28 @@ if (mobileMenuBtn) {
                     top: 100%;
                     left: 0;
                     right: 0;
-                    background: rgba(10, 10, 11, 0.98);
-                    backdrop-filter: blur(20px);
+                    background: #fffdf7;
                     padding: 24px;
                     flex-direction: column;
-                    gap: 16px;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    gap: 12px;
+                    border-bottom: 3px solid #1a1a2e;
+                    box-shadow: 0 8px 0px rgba(26, 26, 46, 0.1);
                 }
                 .mobile-menu.active {
                     display: flex;
                 }
                 .mobile-menu a {
-                    color: #a1a1aa;
-                    font-size: 16px;
-                    padding: 12px 0;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                    color: #4a4a68;
+                    font-size: 17px;
+                    font-weight: 600;
+                    padding: 14px 0;
+                    border-bottom: 2px solid rgba(26, 26, 46, 0.1);
                 }
                 .mobile-menu a:hover {
-                    color: #fff;
+                    color: #1a1a2e;
                 }
                 .mobile-menu .btn {
-                    margin-top: 8px;
+                    margin-top: 12px;
                 }
                 .mobile-menu-btn.active span:nth-child(1) {
                     transform: rotate(45deg) translate(5px, 5px);
@@ -145,9 +146,11 @@ window.addEventListener('scroll', () => {
     const currentScroll = window.pageYOffset;
 
     if (currentScroll > 50) {
-        navbar.style.background = 'rgba(10, 10, 11, 0.95)';
+        navbar.style.background = '#fffdf7';
+        navbar.style.boxShadow = '0 4px 0px rgba(26, 26, 46, 0.1)';
     } else {
-        navbar.style.background = 'rgba(10, 10, 11, 0.8)';
+        navbar.style.background = '#fffdf7';
+        navbar.style.boxShadow = 'none';
     }
 
     lastScroll = currentScroll;
@@ -268,196 +271,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.opacity = '1';
 });
 
-// ===== Floating Art Background =====
-const floatingArtConfig = {
-    // Add your image filenames here (place images in /images folder)
-    images: [
-        'images/art1.jfif',
-        'images/art2.jfif',
-        'images/art3.jfif',
-        'images/art4.jfif',
-        'images/art5.jfif',
-        'images/art6.jfif',
-        'images/art7.jfif',
-        'images/art8.jfif',
-        'images/art9.jfif',
-        'images/art10.jfif',
-        'images/art11.jfif',
-        'images/art12.jfif',
-        'images/art13.jfif',
-        'images/art14.jfif',
-        'images/art15.jfif'
-    ],
-    maxVisible: 5,          // Max images visible at once
-    displayDuration: 5000,  // How long each image stays visible (ms)
-    fadeDuration: 2000,     // Fade in/out duration (ms)
-    spawnInterval: 2000     // Time between spawning new images (ms)
-};
-
-class FloatingArt {
-    constructor() {
-        this.container = document.getElementById('floatingArt');
-        this.activeImages = [];
-        this.imageQueue = [...floatingArtConfig.images];
-        // Grid-based zone system to prevent overlapping
-        // Use smaller grid on mobile
-        this.isMobile = window.innerWidth <= 768;
-        this.gridCols = this.isMobile ? 2 : 3;
-        this.gridRows = 2;
-        this.maxVisible = this.isMobile ? 3 : floatingArtConfig.maxVisible;
-        this.occupiedZones = new Set();
-        this.init();
-    }
-
-    init() {
-        // Check if images exist before starting
-        if (floatingArtConfig.images.length === 0) {
-            console.log('No floating art images configured. Add images to the images array in script.js');
-            return;
-        }
-
-        // Preload images and filter out missing ones
-        this.preloadImages().then(validImages => {
-            if (validImages.length === 0) {
-                console.log('No valid images found in /images folder');
-                return;
-            }
-            floatingArtConfig.images = validImages;
-            this.imageQueue = [...validImages];
-            this.startAnimation();
-        });
-    }
-
-    preloadImages() {
-        return Promise.all(
-            floatingArtConfig.images.map(src => {
-                return new Promise(resolve => {
-                    const img = new Image();
-                    img.onload = () => resolve(src);
-                    img.onerror = () => resolve(null);
-                    img.src = src;
-                });
-            })
-        ).then(results => results.filter(src => src !== null));
-    }
-
-    startAnimation() {
-        // Spawn initial images with staggered delays
-        const initialCount = this.isMobile ? 2 : 3;
-        for (let i = 0; i < Math.min(initialCount, this.maxVisible); i++) {
-            setTimeout(() => this.spawnImage(), 1000 + (i * 1500));
-        }
-
-        // Continue spawning
-        setInterval(() => {
-            if (this.activeImages.length < this.maxVisible && this.occupiedZones.size < (this.gridCols * this.gridRows)) {
-                this.spawnImage();
-            }
-        }, floatingArtConfig.spawnInterval);
-    }
-
-    getAvailableZone() {
-        const totalZones = this.gridCols * this.gridRows;
-        const availableZones = [];
-
-        for (let i = 0; i < totalZones; i++) {
-            if (!this.occupiedZones.has(i)) {
-                availableZones.push(i);
-            }
-        }
-
-        if (availableZones.length === 0) return null;
-
-        // Pick a random available zone
-        return availableZones[Math.floor(Math.random() * availableZones.length)];
-    }
-
-    getPositionForZone(zoneIndex) {
-        const col = zoneIndex % this.gridCols;
-        const row = Math.floor(zoneIndex / this.gridCols);
-
-        const zoneWidth = window.innerWidth / this.gridCols;
-        const zoneHeight = window.innerHeight / this.gridRows;
-
-        const padding = 50;
-        const imgSize = 300;
-
-        // Calculate position within the zone with some randomness
-        const minX = col * zoneWidth + padding;
-        const maxX = (col + 1) * zoneWidth - imgSize - padding;
-        const minY = row * zoneHeight + padding;
-        const maxY = (row + 1) * zoneHeight - imgSize - padding;
-
-        return {
-            x: minX + Math.random() * Math.max(0, maxX - minX),
-            y: minY + Math.random() * Math.max(0, maxY - minY)
-        };
-    }
-
-    getNextImage() {
-        if (this.imageQueue.length === 0) {
-            this.imageQueue = [...floatingArtConfig.images];
-            // Shuffle
-            for (let i = this.imageQueue.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [this.imageQueue[i], this.imageQueue[j]] = [this.imageQueue[j], this.imageQueue[i]];
-            }
-        }
-        return this.imageQueue.pop();
-    }
-
-    spawnImage() {
-        const zone = this.getAvailableZone();
-        if (zone === null) return;
-
-        const imgSrc = this.getNextImage();
-        const pos = this.getPositionForZone(zone);
-
-        const img = document.createElement('img');
-        img.src = imgSrc;
-        img.className = 'floating-art';
-        img.style.left = `${pos.x}px`;
-        img.style.top = `${pos.y}px`;
-        img.dataset.zone = zone;
-
-        // Random size variation
-        const size = 250 + Math.random() * 150;
-        img.style.width = `${size}px`;
-        img.style.height = 'auto';
-
-        // Random rotation
-        const rotation = -10 + Math.random() * 20;
-        img.style.transform = `rotate(${rotation}deg)`;
-
-        this.container.appendChild(img);
-        this.activeImages.push(img);
-        this.occupiedZones.add(zone);
-
-        // Fade in
-        requestAnimationFrame(() => {
-            img.classList.add('visible');
-        });
-
-        // Schedule fade out and removal
-        setTimeout(() => {
-            img.classList.remove('visible');
-            img.classList.add('fade-out');
-
-            setTimeout(() => {
-                if (img.parentNode) {
-                    img.parentNode.removeChild(img);
-                }
-                this.activeImages = this.activeImages.filter(i => i !== img);
-                this.occupiedZones.delete(zone);
-            }, floatingArtConfig.fadeDuration);
-        }, floatingArtConfig.displayDuration);
-    }
-}
-
-// Initialize floating art when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    // Small delay to let page load first
-    setTimeout(() => {
-        new FloatingArt();
-    }, 2000);
-});
+// Side art is now static in HTML - no JavaScript needed
