@@ -199,7 +199,7 @@ window.addEventListener('scroll', () => {
 
         if (navLink) {
             if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-                navLink.style.color = '#ffffff';
+                navLink.style.color = '#1a1a2e';
             } else {
                 navLink.style.color = '';
             }
