@@ -288,10 +288,10 @@ const floatingArtConfig = {
         'images/art14.jfif',
         'images/art15.jfif'
     ],
-    maxVisible: 3,          // Max images visible at once
-    displayDuration: 8000,  // How long each image stays visible (ms)
-    fadeDuration: 3000,     // Fade in/out duration (ms)
-    spawnInterval: 4000     // Time between spawning new images (ms)
+    maxVisible: 5,          // Max images visible at once
+    displayDuration: 5000,  // How long each image stays visible (ms)
+    fadeDuration: 2000,     // Fade in/out duration (ms)
+    spawnInterval: 2000     // Time between spawning new images (ms)
 };
 
 class FloatingArt {
@@ -299,6 +299,10 @@ class FloatingArt {
         this.container = document.getElementById('floatingArt');
         this.activeImages = [];
         this.imageQueue = [...floatingArtConfig.images];
+        // Grid-based zone system to prevent overlapping
+        this.gridCols = 3;
+        this.gridRows = 2;
+        this.occupiedZones = new Set();
         this.init();
     }
 
@@ -335,26 +339,54 @@ class FloatingArt {
     }
 
     startAnimation() {
-        // Spawn initial images with delay
-        setTimeout(() => this.spawnImage(), 1000);
-        setTimeout(() => this.spawnImage(), 3000);
+        // Spawn initial images with staggered delays
+        for (let i = 0; i < Math.min(3, floatingArtConfig.maxVisible); i++) {
+            setTimeout(() => this.spawnImage(), 1000 + (i * 1500));
+        }
 
         // Continue spawning
         setInterval(() => {
-            if (this.activeImages.length < floatingArtConfig.maxVisible) {
+            if (this.activeImages.length < floatingArtConfig.maxVisible && this.occupiedZones.size < (this.gridCols * this.gridRows)) {
                 this.spawnImage();
             }
         }, floatingArtConfig.spawnInterval);
     }
 
-    getRandomPosition() {
-        const padding = 100;
-        const maxX = window.innerWidth - 300 - padding;
-        const maxY = window.innerHeight - 300 - padding;
+    getAvailableZone() {
+        const totalZones = this.gridCols * this.gridRows;
+        const availableZones = [];
+
+        for (let i = 0; i < totalZones; i++) {
+            if (!this.occupiedZones.has(i)) {
+                availableZones.push(i);
+            }
+        }
+
+        if (availableZones.length === 0) return null;
+
+        // Pick a random available zone
+        return availableZones[Math.floor(Math.random() * availableZones.length)];
+    }
+
+    getPositionForZone(zoneIndex) {
+        const col = zoneIndex % this.gridCols;
+        const row = Math.floor(zoneIndex / this.gridCols);
+
+        const zoneWidth = window.innerWidth / this.gridCols;
+        const zoneHeight = window.innerHeight / this.gridRows;
+
+        const padding = 50;
+        const imgSize = 300;
+
+        // Calculate position within the zone with some randomness
+        const minX = col * zoneWidth + padding;
+        const maxX = (col + 1) * zoneWidth - imgSize - padding;
+        const minY = row * zoneHeight + padding;
+        const maxY = (row + 1) * zoneHeight - imgSize - padding;
 
         return {
-            x: padding + Math.random() * maxX,
-            y: padding + Math.random() * maxY
+            x: minX + Math.random() * Math.max(0, maxX - minX),
+            y: minY + Math.random() * Math.max(0, maxY - minY)
         };
     }
 
@@ -371,26 +403,31 @@ class FloatingArt {
     }
 
     spawnImage() {
+        const zone = this.getAvailableZone();
+        if (zone === null) return;
+
         const imgSrc = this.getNextImage();
-        const pos = this.getRandomPosition();
+        const pos = this.getPositionForZone(zone);
 
         const img = document.createElement('img');
         img.src = imgSrc;
         img.className = 'floating-art';
         img.style.left = `${pos.x}px`;
         img.style.top = `${pos.y}px`;
+        img.dataset.zone = zone;
 
         // Random size variation
-        const size = 250 + Math.random() * 200;
+        const size = 250 + Math.random() * 150;
         img.style.width = `${size}px`;
         img.style.height = 'auto';
 
         // Random rotation
-        const rotation = -15 + Math.random() * 30;
+        const rotation = -10 + Math.random() * 20;
         img.style.transform = `rotate(${rotation}deg)`;
 
         this.container.appendChild(img);
         this.activeImages.push(img);
+        this.occupiedZones.add(zone);
 
         // Fade in
         requestAnimationFrame(() => {
@@ -407,6 +444,7 @@ class FloatingArt {
                     img.parentNode.removeChild(img);
                 }
                 this.activeImages = this.activeImages.filter(i => i !== img);
+                this.occupiedZones.delete(zone);
             }, floatingArtConfig.fadeDuration);
         }, floatingArtConfig.displayDuration);
     }
