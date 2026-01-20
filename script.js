@@ -276,8 +276,17 @@ const floatingArtConfig = {
         'images/art2.jfif',
         'images/art3.jfif',
         'images/art4.jfif',
-        'images/art5.jfif'
-        // Add more as needed: 'images/art6.jfif', etc.
+        'images/art5.jfif',
+        'images/art6.jfif',
+        'images/art7.jfif',
+        'images/art8.jfif',
+        'images/art9.jfif',
+        'images/art10.jfif',
+        'images/art11.jfif',
+        'images/art12.jfif',
+        'images/art13.jfif',
+        'images/art14.jfif',
+        'images/art15.jfif'
     ],
     maxVisible: 3,          // Max images visible at once
     displayDuration: 8000,  // How long each image stays visible (ms)
