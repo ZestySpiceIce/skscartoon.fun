@@ -1059,9 +1059,14 @@ section {
     z-index: -1;
 }
 
-/* Hide floating art on mobile for performance */
+/* Optimize floating art for mobile */
 @media (max-width: 768px) {
-    .floating-art-container {
-        display: none;
+    .floating-art {
+        max-width: 200px;
+        max-height: 200px;
+        opacity: 0;
+    }
+    .floating-art.visible {
+        opacity: 0.25;
     }
 }

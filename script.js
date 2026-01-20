@@ -300,8 +300,11 @@ class FloatingArt {
         this.activeImages = [];
         this.imageQueue = [...floatingArtConfig.images];
         // Grid-based zone system to prevent overlapping
-        this.gridCols = 3;
+        // Use smaller grid on mobile
+        this.isMobile = window.innerWidth <= 768;
+        this.gridCols = this.isMobile ? 2 : 3;
         this.gridRows = 2;
+        this.maxVisible = this.isMobile ? 3 : floatingArtConfig.maxVisible;
         this.occupiedZones = new Set();
         this.init();
     }
@@ -340,13 +343,14 @@ class FloatingArt {
 
     startAnimation() {
         // Spawn initial images with staggered delays
-        for (let i = 0; i < Math.min(3, floatingArtConfig.maxVisible); i++) {
+        const initialCount = this.isMobile ? 2 : 3;
+        for (let i = 0; i < Math.min(initialCount, this.maxVisible); i++) {
             setTimeout(() => this.spawnImage(), 1000 + (i * 1500));
         }
 
         // Continue spawning
         setInterval(() => {
-            if (this.activeImages.length < floatingArtConfig.maxVisible && this.occupiedZones.size < (this.gridCols * this.gridRows)) {
+            if (this.activeImages.length < this.maxVisible && this.occupiedZones.size < (this.gridCols * this.gridRows)) {
                 this.spawnImage();
             }
         }, floatingArtConfig.spawnInterval);
