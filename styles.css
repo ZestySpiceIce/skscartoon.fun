@@ -905,8 +905,10 @@ section {
 
 .community-links {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .community-card {
@@ -941,14 +943,10 @@ section {
 }
 
 .community-card:nth-child(2) .community-icon {
-    background: var(--accent-blue);
-}
-
-.community-card:nth-child(3) .community-icon {
     background: var(--accent-red);
 }
 
-.community-card:nth-child(4) .community-icon {
+.community-card:nth-child(3) .community-icon {
     background: var(--accent-green);
 }
 
@@ -960,8 +958,7 @@ section {
 }
 
 .community-card:nth-child(2) .community-icon svg,
-.community-card:nth-child(3) .community-icon svg,
-.community-card:nth-child(4) .community-icon svg {
+.community-card:nth-child(3) .community-icon svg {
     color: white;
 }
 
@@ -1041,10 +1038,6 @@ section {
     }
 
     .token-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .community-links {
         grid-template-columns: repeat(2, 1fr);
     }
 
